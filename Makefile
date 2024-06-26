@@ -1,0 +1,9 @@
+.PHONY: tidy
+tidy:
+	go fmt ./...
+
+generate:
+	go generate ./internal/...
+
+test:
+	go test -v -count 1 -race ./internal/...
