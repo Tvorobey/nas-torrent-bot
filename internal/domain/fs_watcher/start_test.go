@@ -2,6 +2,7 @@ package fs_watcher
 
 import (
 	"context"
+	"nas-torrent-bot/internal/domain/fs_watcher/mocks"
 	"testing"
 	"time"
 
@@ -17,11 +18,16 @@ func TestWatcher_Start(t *testing.T) {
 		watchDir string
 		event    fsnotify.Event
 	}
+	type fields struct {
+		sender *mocks.SenderMock
+	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr assert.ErrorAssertionFunc
-		want    string
+		name        string
+		args        args
+		fields      fields
+		wantErr     assert.ErrorAssertionFunc
+		want        string
+		assertCalls func(t *testing.T, f fields)
 	}{
 		{
 			name: "error_:_watcher",
@@ -32,6 +38,9 @@ func TestWatcher_Start(t *testing.T) {
 				assert.ErrorContains(t, err, "dw.w.Add:")
 
 				return true
+			},
+			assertCalls: func(t *testing.T, f fields) {
+				assert.Nil(t, f.sender)
 			},
 		},
 		{
@@ -45,6 +54,9 @@ func TestWatcher_Start(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 			want:    "file.download",
+			assertCalls: func(t *testing.T, f fields) {
+				assert.Nil(t, f.sender)
+			},
 		},
 		{
 			name: "success",
@@ -55,15 +67,30 @@ func TestWatcher_Start(t *testing.T) {
 					Op:   fsnotify.Create,
 				},
 			},
+			fields: fields{
+				sender: &mocks.SenderMock{
+					SendMessageToAllFunc: func(message string) {},
+				},
+			},
 			wantErr: assert.NoError,
 			want:    "movie.mov",
+			assertCalls: func(t *testing.T, f fields) {
+				sendCalls := f.sender.SendMessageToAllCalls()
+				assert.Len(t, sendCalls, 1)
+				assert.Equal(
+					t,
+					"Файл movie.mov успешно скачан",
+					sendCalls[0].Message,
+				)
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &Watcher{
-				w:      w,
-				events: make(chan string, 1),
+				w:        w,
+				WatchDir: tt.args.watchDir,
+				Sender:   tt.fields.sender,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -76,24 +103,7 @@ func TestWatcher_Start(t *testing.T) {
 				return
 			}
 
-			events := w.GetEventsChan()
-
 			w.w.Events <- tt.args.event
-
-			for {
-				select {
-				case event, ok := <-events:
-					if !ok {
-						return
-					}
-
-					assert.Equal(
-						t,
-						tt.want,
-						event,
-					)
-				}
-			}
 		})
 	}
 }

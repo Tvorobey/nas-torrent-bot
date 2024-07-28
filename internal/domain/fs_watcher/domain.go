@@ -6,12 +6,15 @@ import (
 )
 
 type Watcher struct {
-	w *fsnotify.Watcher
-
-	events chan string
+	w        *fsnotify.Watcher
+	WatchDir string
+	Sender   Sender
 }
 
-func New() (*Watcher, error) {
+func New(
+	watchDir string,
+	sender Sender,
+) (*Watcher, error) {
 	fsNotify, err := fsnotify.NewWatcher()
 
 	if err != nil {
@@ -19,8 +22,9 @@ func New() (*Watcher, error) {
 	}
 
 	return &Watcher{
-			w:      fsNotify,
-			events: make(chan string, 1),
+			w:        fsNotify,
+			WatchDir: watchDir,
+			Sender:   sender,
 		},
 		nil
 }

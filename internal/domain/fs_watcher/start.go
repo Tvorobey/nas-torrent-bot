@@ -28,11 +28,10 @@ func (w *Watcher) Start(ctx context.Context, watchDir string) error {
 					ext := path.Ext(file)
 
 					if _, ok := entity.ExtBlackList[ext]; !ok {
-						w.events <- file
+						w.Sender.SendMessageToAll(fmt.Sprintf("Файл %s успешно скачан", file))
 					}
 				}
 			case <-ctx.Done():
-				close(w.events)
 				return
 			}
 		}
