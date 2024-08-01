@@ -9,6 +9,7 @@ import (
 	"nas-torrent-bot/internal/dig/config"
 	"nas-torrent-bot/internal/domain/fs_manager"
 	"nas-torrent-bot/internal/domain/loader"
+	"nas-torrent-bot/internal/domain/storage"
 	"nas-torrent-bot/internal/usecase/process_message"
 	"nas-torrent-bot/internal/usecase/send_message"
 	"os"
@@ -52,6 +53,7 @@ func initDomains(container *dig.Container) error {
 	//err = container.Provide(fs_watcher.New)
 	err = container.Provide(loader.New)
 	err = container.Provide(fs_manager.New)
+	err = container.Provide(storage.New)
 
 	return err
 }
