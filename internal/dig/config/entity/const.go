@@ -5,4 +5,5 @@ const (
 	WatchDirEnv    = "WATCH_DIR"
 	DownloadDirEnv = "DOWNLOAD_DIR"
 	LogLevelEnv    = "LOG_LEVEL"
+	SecretEnv      = "SECRET"
 )
