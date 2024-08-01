@@ -3,16 +3,17 @@ package fs_watcher
 import (
 	"errors"
 	"github.com/fsnotify/fsnotify"
+	"nas-torrent-bot/internal/dig/config"
 )
 
 type Watcher struct {
-	w        *fsnotify.Watcher
-	WatchDir string
-	Sender   Sender
+	w      *fsnotify.Watcher
+	Sender Sender
+
+	cfg *config.Config
 }
 
 func New(
-	watchDir string,
 	sender Sender,
 ) (*Watcher, error) {
 	fsNotify, err := fsnotify.NewWatcher()
@@ -22,9 +23,8 @@ func New(
 	}
 
 	return &Watcher{
-			w:        fsNotify,
-			WatchDir: watchDir,
-			Sender:   sender,
+			w:      fsNotify,
+			Sender: sender,
 		},
 		nil
 }

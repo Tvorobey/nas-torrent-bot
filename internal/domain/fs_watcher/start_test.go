@@ -2,6 +2,7 @@ package fs_watcher
 
 import (
 	"context"
+	"nas-torrent-bot/internal/dig/config"
 	"nas-torrent-bot/internal/domain/fs_watcher/mocks"
 	"testing"
 	"time"
@@ -15,8 +16,8 @@ func TestWatcher_Start(t *testing.T) {
 	assert.NoError(t, err)
 
 	type args struct {
-		watchDir string
-		event    fsnotify.Event
+		cfg   *config.Config
+		event fsnotify.Event
 	}
 	type fields struct {
 		sender *mocks.SenderMock
@@ -32,7 +33,9 @@ func TestWatcher_Start(t *testing.T) {
 		{
 			name: "error_:_watcher",
 			args: args{
-				watchDir: "blabla",
+				cfg: &config.Config{
+					WatchDir: "blabla",
+				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.ErrorContains(t, err, "dw.w.Add:")
@@ -46,7 +49,9 @@ func TestWatcher_Start(t *testing.T) {
 		{
 			name: "black_list_ext",
 			args: args{
-				watchDir: "./",
+				cfg: &config.Config{
+					WatchDir: "./",
+				},
 				event: fsnotify.Event{
 					Name: "file.download",
 					Op:   fsnotify.Create,
@@ -61,7 +66,9 @@ func TestWatcher_Start(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				watchDir: "./",
+				cfg: &config.Config{
+					WatchDir: "./",
+				},
 				event: fsnotify.Event{
 					Name: "movie.mov",
 					Op:   fsnotify.Create,
@@ -88,15 +95,15 @@ func TestWatcher_Start(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &Watcher{
-				w:        w,
-				WatchDir: tt.args.watchDir,
-				Sender:   tt.fields.sender,
+				w:      w,
+				cfg:    tt.args.cfg,
+				Sender: tt.fields.sender,
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			err := w.Start(ctx, tt.args.watchDir)
+			err := w.Start(ctx)
 			tt.wantErr(t, err)
 
 			if err != nil {

@@ -1,0 +1,5 @@
+bot_token: "token"
+watch_dir: "dir"
+download_dir: "dir"
+log_level: "debug"
+app_name: "app"

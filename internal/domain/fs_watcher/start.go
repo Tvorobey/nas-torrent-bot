@@ -10,8 +10,8 @@ import (
 	"nas-torrent-bot/internal/domain/fs_watcher/entity"
 )
 
-func (w *Watcher) Start(ctx context.Context, watchDir string) error {
-	if err := w.w.Add(watchDir); err != nil {
+func (w *Watcher) Start(ctx context.Context) error {
+	if err := w.w.Add(w.cfg.WatchDir); err != nil {
 		return fmt.Errorf("dw.w.Add: %s", err.Error())
 	}
 
