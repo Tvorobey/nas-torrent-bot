@@ -15,6 +15,7 @@ type Watcher struct {
 
 func New(
 	sender Sender,
+	cfg *config.Config,
 ) (*Watcher, error) {
 	fsNotify, err := fsnotify.NewWatcher()
 
@@ -25,6 +26,7 @@ func New(
 	return &Watcher{
 			w:      fsNotify,
 			Sender: sender,
+			cfg:    cfg,
 		},
 		nil
 }

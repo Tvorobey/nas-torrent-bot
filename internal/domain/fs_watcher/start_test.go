@@ -12,9 +12,6 @@ import (
 )
 
 func TestWatcher_Start(t *testing.T) {
-	w, err := fsnotify.NewWatcher()
-	assert.NoError(t, err)
-
 	type args struct {
 		cfg   *config.Config
 		event fsnotify.Event
@@ -94,16 +91,17 @@ func TestWatcher_Start(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			w := &Watcher{
-				w:      w,
-				cfg:    tt.args.cfg,
-				Sender: tt.fields.sender,
-			}
+			w, err := New(
+				tt.fields.sender,
+				tt.args.cfg,
+			)
+
+			assert.NoError(t, err)
 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			err := w.Start(ctx)
+			err = w.Start(ctx)
 			tt.wantErr(t, err)
 
 			if err != nil {
