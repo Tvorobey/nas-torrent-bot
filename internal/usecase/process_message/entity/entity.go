@@ -13,3 +13,9 @@ type CommandMessageIn struct {
 	Command Command
 	Args    string
 }
+
+type FileMessageIn struct {
+	UserID   int64
+	FileName string
+	Url      string
+}

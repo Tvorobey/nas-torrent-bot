@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"log"
 	"nas-torrent-bot/internal/dig/config"
+	"nas-torrent-bot/internal/domain/fs_watcher"
 	"nas-torrent-bot/internal/domain/loader"
 	"os"
 	"os/signal"
@@ -46,7 +47,7 @@ func NewLogger(config *config.Config) (*zap.Logger, error) {
 func initDomains(container *dig.Container) error {
 	err := container.Provide(config.NewConfig)
 	err = container.Provide(NewLogger)
-	//err = container.Provide(fs_watcher.New)
+	err = container.Provide(fs_watcher.New)
 	err = container.Provide(loader.New)
 
 	return err
@@ -57,13 +58,13 @@ func digInvoke(ctx context.Context, container *dig.Container) error {
 		logger.Info("Application starting")
 	})
 
-	//err = container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
-	//	logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
-	//	err := watcher.Start(ctx)
-	//	if err != nil {
-	//		logger.Fatal("Failed to start watcher", zap.Error(err))
-	//	}
-	//})
+	err = container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
+		logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
+		err := watcher.Start(ctx)
+		if err != nil {
+			logger.Fatal("Failed to start watcher", zap.Error(err))
+		}
+	})
 
 	return err
 }
