@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSendMessageUseCase_SendMessageToAll(t *testing.T) {
+func TestSendMessageToAll(t *testing.T) {
 	type fields struct {
 		Bot     *mocks.BotMock
 		Storage *mocks.StorageMock
