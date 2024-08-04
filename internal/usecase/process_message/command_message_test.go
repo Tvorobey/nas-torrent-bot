@@ -27,35 +27,6 @@ func TestProcessCommandMessage(t *testing.T) {
 		assertCalls func(t *testing.T, f fields)
 	}{
 		{
-			name: "ok_:_unknown_user",
-			fields: fields{
-				storage: &mocks.StorageMock{
-					ExistsFunc: func(userID int64) bool {
-						return false
-					},
-				},
-			},
-			args: args{
-				in: entity.CommandMessageIn{
-					UserID: 11,
-				},
-			},
-			want: entity.StartRulesAnswer,
-			assertCalls: func(t *testing.T, f fields) {
-				assert.Nil(t, f.cfg)
-				assert.Nil(t, f.loader)
-				assert.Nil(t, f.fsManager)
-
-				existsCalls := f.storage.ExistsCalls()
-				assert.Len(t, existsCalls, 1)
-				assert.Equal(
-					t,
-					11,
-					existsCalls[0].UserID,
-				)
-			},
-		},
-		{
 			name: "start_:_invalid_secret",
 			fields: fields{
 				storage: &mocks.StorageMock{

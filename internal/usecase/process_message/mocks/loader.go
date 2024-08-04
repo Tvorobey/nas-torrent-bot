@@ -4,7 +4,7 @@
 package mocks
 
 import (
-	"nas-torrent-bot/internal/domain/loader/entity"
+	loaderEntity "nas-torrent-bot/internal/domain/loader/entity"
 	"sync"
 )
 
@@ -14,7 +14,7 @@ import (
 //
 //		// make and configure a mocked process_message.Loader
 //		mockedLoader := &LoaderMock{
-//			DownloadFunc: func(in entity.In) error {
+//			DownloadFunc: func(in loaderEntity.In) error {
 //				panic("mock out the Download method")
 //			},
 //		}
@@ -25,26 +25,26 @@ import (
 //	}
 type LoaderMock struct {
 	// DownloadFunc mocks the Download method.
-	DownloadFunc func(in entity.In) error
+	DownloadFunc func(in loaderEntity.In) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// Download holds details about calls to the Download method.
 		Download []struct {
 			// In is the in argument value.
-			In entity.In
+			In loaderEntity.In
 		}
 	}
 	lockDownload sync.RWMutex
 }
 
 // Download calls DownloadFunc.
-func (mock *LoaderMock) Download(in entity.In) error {
+func (mock *LoaderMock) Download(in loaderEntity.In) error {
 	if mock.DownloadFunc == nil {
 		panic("LoaderMock.DownloadFunc: method is nil but Loader.Download was just called")
 	}
 	callInfo := struct {
-		In entity.In
+		In loaderEntity.In
 	}{
 		In: in,
 	}
@@ -59,10 +59,10 @@ func (mock *LoaderMock) Download(in entity.In) error {
 //
 //	len(mockedLoader.DownloadCalls())
 func (mock *LoaderMock) DownloadCalls() []struct {
-	In entity.In
+	In loaderEntity.In
 } {
 	var calls []struct {
-		In entity.In
+		In loaderEntity.In
 	}
 	mock.lockDownload.RLock()
 	calls = mock.calls.Download

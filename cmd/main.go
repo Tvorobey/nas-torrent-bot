@@ -6,8 +6,10 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
+	"nas-torrent-bot/internal/bot"
 	"nas-torrent-bot/internal/dig/config"
 	"nas-torrent-bot/internal/domain/fs_manager"
+	"nas-torrent-bot/internal/domain/fs_watcher"
 	"nas-torrent-bot/internal/domain/loader"
 	"nas-torrent-bot/internal/domain/storage"
 	"nas-torrent-bot/internal/usecase/process_message"
@@ -47,10 +49,15 @@ func NewLogger(config *config.Config) (*zap.Logger, error) {
 	return cfg.Build()
 }
 
+func initInternal(ctx context.Context, container *dig.Container) error {
+	err := container.Provide(bot.New)
+	return err
+}
+
 func initDomains(container *dig.Container) error {
 	err := container.Provide(config.NewConfig)
 	err = container.Provide(NewLogger)
-	//err = container.Provide(fs_watcher.New)
+	err = container.Provide(fs_watcher.New)
 	err = container.Provide(loader.New)
 	err = container.Provide(fs_manager.New)
 	err = container.Provide(storage.New)
@@ -58,9 +65,43 @@ func initDomains(container *dig.Container) error {
 	return err
 }
 
-func initUseCases(container *dig.Container) error {
-	err := container.Provide(send_message.New)
-	err = container.Provide(process_message.New)
+func initInterfaces(container *dig.Container) error {
+	err := container.Provide(func(cfg *config.Config) process_message.Loader {
+		return loader.New(cfg)
+	})
+
+	err = container.Provide(func() process_message.Storage {
+		return storage.New()
+	})
+
+	err = container.Provide(func(cfg *config.Config) process_message.FSManager {
+		return fs_manager.New(cfg)
+	})
+
+	err = container.Provide(func(
+		storage process_message.Storage,
+		loader process_message.Loader,
+		fsManager process_message.FSManager,
+		cfg *config.Config) bot.MessageUseCase {
+		return process_message.New(
+			storage,
+			loader,
+			fsManager,
+			cfg,
+		)
+	})
+
+	err = container.Provide(func(cfg *config.Config, log *zap.Logger, uc bot.MessageUseCase) send_message.Bot {
+		return bot.New(cfg, log, uc)
+	})
+
+	err = container.Provide(func() send_message.Storage {
+		return storage.New()
+	})
+
+	err = container.Provide(func(bot send_message.Bot, storage send_message.Storage) *send_message.SendMessageUseCase {
+		return send_message.New(bot, storage)
+	})
 
 	return err
 }
@@ -70,13 +111,17 @@ func digInvoke(ctx context.Context, container *dig.Container) error {
 		logger.Info("Application starting", zap.String("watchDir", cfg.WatchDir), zap.String("downloadDir", cfg.DownloadDir))
 	})
 
-	//err = container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
-	//	logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
-	//	err := watcher.Start(ctx)
-	//	if err != nil {
-	//		logger.Fatal("Failed to start watcher", zap.Error(err))
-	//	}
-	//})
+	err = container.Invoke(func(bot *bot.Bot) error {
+		return bot.Start(ctx)
+	})
+
+	err = container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
+		logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
+		err := watcher.Start(ctx)
+		if err != nil {
+			logger.Fatal("Failed to start watcher", zap.Error(err))
+		}
+	})
 
 	return err
 }
@@ -90,14 +135,19 @@ func main() {
 		log.Fatalf("failed init domains: %v", err)
 	}
 
+	err = initInterfaces(container)
+	if err != nil {
+		log.Fatalf("failed init interfaces: %v", err)
+	}
+
+	err = initInternal(ctx, container)
+	if err != nil {
+		log.Fatalf("failed init internal: %v", err)
+	}
+
 	err = digInvoke(ctx, container)
 	if err != nil {
 		log.Fatalf("failed invole dig: %v", err)
-	}
-
-	err = initUseCases(container)
-	if err != nil {
-		log.Fatalf("failed init usecases: %v", err)
 	}
 
 	// Grace shutdown

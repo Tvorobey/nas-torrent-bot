@@ -7,10 +7,6 @@ import (
 )
 
 func (uc *ProcessMessageUseCase) ProcessCommandMessage(in entity.CommandMessageIn) string {
-	if !uc.storage.Exists(in.UserID) {
-		return entity.StartRulesAnswer
-	}
-
 	switch in.Command {
 	case entity.CommandStart:
 		return uc.startCommand(in)
@@ -32,6 +28,10 @@ func (uc *ProcessMessageUseCase) startCommand(in entity.CommandMessageIn) string
 }
 
 func (uc *ProcessMessageUseCase) moveCommand(in entity.CommandMessageIn) string {
+	if !uc.storage.Exists(in.UserID) {
+		return entity.StartRulesAnswer
+	}
+
 	splitArgs := strings.Split(in.Args, " ")
 	if err := uc.fsManager.Move(splitArgs[0], splitArgs[1]); err != nil {
 		return fmt.Sprintf(entity.FailedMoveFile, err)
