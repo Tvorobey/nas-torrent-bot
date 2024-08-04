@@ -66,16 +66,16 @@ func initDomains(container *dig.Container) error {
 }
 
 func initInterfaces(container *dig.Container) error {
-	err := container.Provide(func(cfg *config.Config) process_message.Loader {
-		return loader.New(cfg)
+	err := container.Provide(func(loader *loader.Loader) process_message.Loader {
+		return loader
 	})
 
-	err = container.Provide(func() process_message.Storage {
-		return storage.New()
+	err = container.Provide(func(s *storage.Storage) process_message.Storage {
+		return s
 	})
 
-	err = container.Provide(func(cfg *config.Config) process_message.FSManager {
-		return fs_manager.New(cfg)
+	err = container.Provide(func(fs *fs_manager.FSManager) process_message.FSManager {
+		return fs
 	})
 
 	err = container.Provide(func(
@@ -91,12 +91,12 @@ func initInterfaces(container *dig.Container) error {
 		)
 	})
 
-	err = container.Provide(func(cfg *config.Config, log *zap.Logger, uc bot.MessageUseCase) send_message.Bot {
-		return bot.New(cfg, log, uc)
+	err = container.Provide(func(bot *bot.Bot) send_message.Bot {
+		return bot
 	})
 
-	err = container.Provide(func() send_message.Storage {
-		return storage.New()
+	err = container.Provide(func(s *storage.Storage) send_message.Storage {
+		return s
 	})
 
 	err = container.Provide(func(bot send_message.Bot, storage send_message.Storage) *send_message.SendMessageUseCase {
