@@ -8,7 +8,7 @@
 
 Settings->Location->Destination - путь до папки, куда сохраняется скачанный торрент (WATCH_DIR)
 
-Settings->Location->WatchedFolder - путь до папки, откуда автоматом будут ставиться торренты на закачку (LOAD_DIR)
+Settings->Location->WatchedFolder - путь до папки, откуда автоматом будут ставиться торренты на закачку (DOWNLOAD_DIR)
 
 ### Сборка образа контейнера
 Скачайте проект и выполните команду
