@@ -1,8 +1,9 @@
 package process_message
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"nas-torrent-bot/internal/usecase/process_message/entity"
 	"nas-torrent-bot/internal/usecase/process_message/mocks"

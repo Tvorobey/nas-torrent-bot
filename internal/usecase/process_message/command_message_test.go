@@ -2,11 +2,12 @@ package process_message
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"nas-torrent-bot/internal/dig/config"
 	"nas-torrent-bot/internal/usecase/process_message/entity"
 	"nas-torrent-bot/internal/usecase/process_message/mocks"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestProcessCommandMessage(t *testing.T) {

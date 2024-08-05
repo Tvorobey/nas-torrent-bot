@@ -2,8 +2,9 @@ package bot
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"nas-torrent-bot/internal/usecase/process_message/entity"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func (b *Bot) Start(ctx context.Context) error {

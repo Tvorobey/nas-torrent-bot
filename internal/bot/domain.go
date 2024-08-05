@@ -1,9 +1,10 @@
 package bot
 
 import (
+	"nas-torrent-bot/internal/dig/config"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.uber.org/zap"
-	"nas-torrent-bot/internal/dig/config"
 )
 
 type Bot struct {

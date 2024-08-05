@@ -1,9 +1,10 @@
 package send_message
 
 import (
-	"github.com/stretchr/testify/assert"
 	"nas-torrent-bot/internal/usecase/send_message/mocks"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSendMessageToAll(t *testing.T) {

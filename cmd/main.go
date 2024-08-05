@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-	"go.uber.org/dig"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"log"
 	"nas-torrent-bot/internal/bot"
 	"nas-torrent-bot/internal/dig/config"
@@ -17,6 +14,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.uber.org/dig"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func NewLogger(config *config.Config) (*zap.Logger, error) {

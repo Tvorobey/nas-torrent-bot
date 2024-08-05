@@ -2,9 +2,10 @@ package fs_watcher
 
 import (
 	"errors"
-	"github.com/fsnotify/fsnotify"
 	"nas-torrent-bot/internal/dig/config"
 	"nas-torrent-bot/internal/usecase/send_message"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type Watcher struct {

@@ -1,6 +1,7 @@
-.PHONY: tidy
-tidy:
+.PHONY: fmt
+fmt:
 	go fmt ./internal/...
+	goimports -w .
 
 generate:
 	go generate ./internal/...
