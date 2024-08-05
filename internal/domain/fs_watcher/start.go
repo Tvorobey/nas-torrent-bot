@@ -10,6 +10,10 @@ import (
 	"nas-torrent-bot/internal/domain/fs_watcher/entity"
 )
 
+const (
+	fileDownloadedMessage = "Файл %s успешно скачан.\nВведи команду /move %s <to>, где to папка, в которую надо переместить файл"
+)
+
 func (w *Watcher) Start(ctx context.Context) error {
 	if err := w.w.Add(w.cfg.WatchDir); err != nil {
 		return fmt.Errorf("dw.w.Add: %s", err.Error())
@@ -28,7 +32,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 					ext := path.Ext(file)
 
 					if _, ok := entity.ExtBlackList[ext]; !ok {
-						w.Sender.SendMessageToAll(fmt.Sprintf("Файл %s успешно скачан", file))
+						w.Sender.SendMessageToAll(fmt.Sprintf(fileDownloadedMessage, file, file))
 					}
 				}
 			case <-ctx.Done():
