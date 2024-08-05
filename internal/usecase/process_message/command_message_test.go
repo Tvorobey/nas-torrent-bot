@@ -178,10 +178,10 @@ func TestProcessCommandMessage(t *testing.T) {
 					UserID:  11,
 					ChatID:  22,
 					Command: "move",
-					Args:    "from to",
+					Args:    "some file.txt to my folder",
 				},
 			},
-			want: fmt.Sprintf(entity.SuccessMovedFile, "from"),
+			want: fmt.Sprintf(entity.SuccessMovedFile, "some file.txt"),
 			assertCalls: func(t *testing.T, f fields) {
 				assert.Nil(t, f.loader)
 				assert.Nil(t, f.cfg)
@@ -198,12 +198,12 @@ func TestProcessCommandMessage(t *testing.T) {
 				assert.Len(t, moveCalls, 1)
 				assert.Equal(
 					t,
-					"from",
+					"some file.txt",
 					moveCalls[0].From,
 				)
 				assert.Equal(
 					t,
-					"to",
+					"my folder",
 					moveCalls[0].To,
 				)
 			},

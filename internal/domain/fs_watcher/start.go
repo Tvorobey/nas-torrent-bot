@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	fileDownloadedMessage = "Файл %s успешно скачан.\nВведи команду /move %s <to>, где to папка, в которую надо переместить файл"
+	fileDownloadedMessage = "Введи команду /move %s to <folder_name>, где folder_name папка, в которую надо переместить файл\n"
+	Separator             = "to"
 )
 
 func (w *Watcher) Start(ctx context.Context) error {
@@ -32,7 +33,10 @@ func (w *Watcher) Start(ctx context.Context) error {
 					ext := path.Ext(file)
 
 					if _, ok := entity.ExtBlackList[ext]; !ok {
-						w.Sender.SendMessageToAll(fmt.Sprintf(fileDownloadedMessage, file, file))
+						message := fmt.Sprintf("Файл %s успешно скачан\n")
+						message = message + fmt.Sprintf(fileDownloadedMessage, file)
+
+						w.Sender.SendMessageToAll(message)
 					}
 				}
 			case <-ctx.Done():

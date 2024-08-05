@@ -83,7 +83,7 @@ func TestMoveFile(t *testing.T) {
 	dstDir := t.TempDir()
 
 	// Определяем имена файлов
-	srcFile := "example.txt"
+	srcFile := "example file.txt"
 	srcPath := filepath.Join(srcDir, srcFile)
 	dstPath := filepath.Join(dstDir, srcFile)
 

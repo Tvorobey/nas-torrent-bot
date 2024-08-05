@@ -9,9 +9,10 @@ import (
 )
 
 func (fs *FSManager) Move(fileName, to string) error {
-	dir := fs.cfg.DownloadDir
+	dir := fs.cfg.WatchDir
 	currentPath := path.Join(dir, fileName)
 	destPath := path.Join(dir, to, fileName)
+	destPath = path.Clean(destPath)
 
 	fileStat, err := os.Stat(currentPath)
 	if err != nil {
