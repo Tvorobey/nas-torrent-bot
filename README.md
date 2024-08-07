@@ -1,4 +1,7 @@
 # nas-torrent-bot
+
+[![codecov](https://codecov.io/github/Tvorobey/nas-torrent-bot/graph/badge.svg?token=D5HKYF47HG)](https://codecov.io/github/Tvorobey/nas-torrent-bot)
+
 ## Бот для NAS. Для скачивания торрентов
 
 ### Подготовка на NAS
