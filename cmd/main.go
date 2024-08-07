@@ -139,6 +139,12 @@ func initInterfaces(container *dig.Container) error {
 		errorList = append(errorList, err)
 	}
 
+	if err := container.Provide(func(sendMessage *send_message.SendMessageUseCase) fs_watcher.SendMessageUseCase {
+		return sendMessage
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
+
 	return errors.Join(errorList...)
 }
 

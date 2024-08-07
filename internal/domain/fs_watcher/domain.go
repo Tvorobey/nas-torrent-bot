@@ -2,21 +2,19 @@ package fs_watcher
 
 import (
 	"errors"
-	"nas-torrent-bot/internal/dig/config"
-	"nas-torrent-bot/internal/usecase/send_message"
-
 	"github.com/fsnotify/fsnotify"
+	"nas-torrent-bot/internal/dig/config"
 )
 
 type Watcher struct {
 	w      *fsnotify.Watcher
-	Sender *send_message.SendMessageUseCase
+	Sender SendMessageUseCase
 
 	cfg *config.Config
 }
 
 func New(
-	sender *send_message.SendMessageUseCase,
+	sender SendMessageUseCase,
 	cfg *config.Config,
 ) (*Watcher, error) {
 	fsNotify, err := fsnotify.NewWatcher()
