@@ -1,5 +1,6 @@
 package loader
 
+// nolint:staticcheck
 import (
 	"io/ioutil"
 	"nas-torrent-bot/internal/dig/config"

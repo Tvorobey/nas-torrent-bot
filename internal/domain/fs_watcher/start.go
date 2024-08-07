@@ -33,7 +33,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 					ext := path.Ext(file)
 
 					if _, ok := entity.ExtBlackList[ext]; !ok {
-						message := fmt.Sprintf("Файл %s успешно скачан\n")
+						message := fmt.Sprintf("Файл %s успешно скачан\n", file)
 						message = message + fmt.Sprintf(fileDownloadedMessage, file)
 
 						w.Sender.SendMessageToAll(message)

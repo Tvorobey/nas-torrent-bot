@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"nas-torrent-bot/internal/bot"
 	"nas-torrent-bot/internal/dig/config"
@@ -50,36 +51,62 @@ func NewLogger(config *config.Config) (*zap.Logger, error) {
 	return cfg.Build()
 }
 
-func initInternal(ctx context.Context, container *dig.Container) error {
+func initInternal(container *dig.Container) error {
 	err := container.Provide(bot.New)
 	return err
 }
 
 func initDomains(container *dig.Container) error {
-	err := container.Provide(config.NewConfig)
-	err = container.Provide(NewLogger)
-	err = container.Provide(fs_watcher.New)
-	err = container.Provide(loader.New)
-	err = container.Provide(fs_manager.New)
-	err = container.Provide(storage.New)
+	var errorList []error
+	if err := container.Provide(config.NewConfig); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	return err
+	if err := container.Provide(NewLogger); err != nil {
+		errorList = append(errorList, err)
+	}
+
+	if err := container.Provide(fs_watcher.New); err != nil {
+		errorList = append(errorList, err)
+	}
+
+	if err := container.Provide(loader.New); err != nil {
+		errorList = append(errorList, err)
+	}
+
+	if err := container.Provide(fs_manager.New); err != nil {
+		errorList = append(errorList, err)
+	}
+
+	if err := container.Provide(storage.New); err != nil {
+		errorList = append(errorList, err)
+	}
+
+	return errors.Join(errorList...)
 }
 
 func initInterfaces(container *dig.Container) error {
-	err := container.Provide(func(loader *loader.Loader) process_message.Loader {
+	var errorList []error
+
+	if err := container.Provide(func(loader *loader.Loader) process_message.Loader {
 		return loader
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Provide(func(s *storage.Storage) process_message.Storage {
+	if err := container.Provide(func(s *storage.Storage) process_message.Storage {
 		return s
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Provide(func(fs *fs_manager.FSManager) process_message.FSManager {
+	if err := container.Provide(func(fs *fs_manager.FSManager) process_message.FSManager {
 		return fs
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Provide(func(
+	if err := container.Provide(func(
 		storage process_message.Storage,
 		loader process_message.Loader,
 		fsManager process_message.FSManager,
@@ -90,41 +117,57 @@ func initInterfaces(container *dig.Container) error {
 			fsManager,
 			cfg,
 		)
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Provide(func(bot *bot.Bot) send_message.Bot {
+	if err := container.Provide(func(bot *bot.Bot) send_message.Bot {
 		return bot
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Provide(func(s *storage.Storage) send_message.Storage {
+	if err := container.Provide(func(s *storage.Storage) send_message.Storage {
 		return s
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Provide(func(bot send_message.Bot, storage send_message.Storage) *send_message.SendMessageUseCase {
+	if err := container.Provide(func(bot send_message.Bot, storage send_message.Storage) *send_message.SendMessageUseCase {
 		return send_message.New(bot, storage)
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	return err
+	return errors.Join(errorList...)
 }
 
 func digInvoke(ctx context.Context, container *dig.Container) error {
-	err := container.Invoke(func(cfg *config.Config, logger *zap.Logger) {
+	var errorList []error
+
+	if err := container.Invoke(func(cfg *config.Config, logger *zap.Logger) {
 		logger.Info("Application starting", zap.String("watchDir", cfg.WatchDir), zap.String("downloadDir", cfg.DownloadDir))
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Invoke(func(bot *bot.Bot) error {
+	if err := container.Invoke(func(bot *bot.Bot) error {
 		return bot.Start(ctx)
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	err = container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
+	if err := container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
 		logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
 		err := watcher.Start(ctx)
 		if err != nil {
 			logger.Fatal("Failed to start watcher", zap.Error(err))
 		}
-	})
+	}); err != nil {
+		errorList = append(errorList, err)
+	}
 
-	return err
+	return errors.Join(errorList...)
 }
 
 func main() {
@@ -141,7 +184,7 @@ func main() {
 		log.Fatalf("failed init interfaces: %v", err)
 	}
 
-	err = initInternal(ctx, container)
+	err = initInternal(container)
 	if err != nil {
 		log.Fatalf("failed init internal: %v", err)
 	}
@@ -153,7 +196,7 @@ func main() {
 
 	// Grace shutdown
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL, os.Interrupt, os.Kill)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	sig := <-sigs
 	log.Fatal("Signal: ", sig)
 }

@@ -1,5 +1,6 @@
 package fs_manager
 
+// nolint:staticcheck
 import (
 	"io/ioutil"
 	"os"
@@ -27,11 +28,6 @@ func createTestDir(t *testing.T, dir string) {
 			t.Fatalf("failed to create file %s: %v", filePath, err)
 		}
 	}
-}
-
-// removeTestDir удаляет временную директорию и ее содержимое
-func removeTestDir(dir string) error {
-	return os.RemoveAll(dir)
 }
 
 // TestCopyDirectory проверяет корректность работы функции CopyDirectory
