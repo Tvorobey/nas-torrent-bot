@@ -3,12 +3,13 @@ package fs_watcher
 import (
 	"context"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	"github.com/stretchr/testify/assert"
 	"nas-torrent-bot/internal/dig/config"
 	"nas-torrent-bot/internal/domain/fs_watcher/mocks"
 	"testing"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWatcher_Start(t *testing.T) {

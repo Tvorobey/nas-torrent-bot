@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"nas-torrent-bot/internal/bot"
 	"nas-torrent-bot/internal/dig/config"
@@ -15,6 +14,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.uber.org/multierr"
 
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -52,128 +53,76 @@ func NewLogger(config *config.Config) (*zap.Logger, error) {
 }
 
 func initInternal(container *dig.Container) error {
-	err := container.Provide(bot.New)
-	return err
+	return multierr.Combine(
+		container.Provide(bot.New),
+	)
 }
 
 func initDomains(container *dig.Container) error {
-	var errorList []error
-	if err := container.Provide(config.NewConfig); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(NewLogger); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(fs_watcher.New); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(loader.New); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(fs_manager.New); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(storage.New); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	return errors.Join(errorList...)
+	return multierr.Combine(
+		container.Provide(config.NewConfig),
+		container.Provide(NewLogger),
+		container.Provide(fs_watcher.New),
+		container.Provide(loader.New),
+		container.Provide(fs_manager.New),
+		container.Provide(storage.New),
+	)
 }
 
 func initInterfaces(container *dig.Container) error {
-	var errorList []error
-
-	if err := container.Provide(func(loader *loader.Loader) process_message.Loader {
-		return loader
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(s *storage.Storage) process_message.Storage {
-		return s
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(fs *fs_manager.FSManager) process_message.FSManager {
-		return fs
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(
-		storage process_message.Storage,
-		loader process_message.Loader,
-		fsManager process_message.FSManager,
-		cfg *config.Config) bot.MessageUseCase {
-		return process_message.New(
-			storage,
-			loader,
-			fsManager,
-			cfg,
-		)
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(bot *bot.Bot) send_message.Bot {
-		return bot
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(s *storage.Storage) send_message.Storage {
-		return s
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(bot send_message.Bot, storage send_message.Storage) *send_message.SendMessageUseCase {
-		return send_message.New(bot, storage)
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Provide(func(sendMessage *send_message.SendMessageUseCase) fs_watcher.SendMessageUseCase {
-		return sendMessage
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	return errors.Join(errorList...)
+	return multierr.Combine(
+		container.Provide(func(loader *loader.Loader) process_message.Loader {
+			return loader
+		}),
+		container.Provide(func(s *storage.Storage) process_message.Storage {
+			return s
+		}),
+		container.Provide(func(fs *fs_manager.FSManager) process_message.FSManager {
+			return fs
+		}),
+		container.Provide(func(
+			storage process_message.Storage,
+			loader process_message.Loader,
+			fsManager process_message.FSManager,
+			cfg *config.Config) bot.MessageUseCase {
+			return process_message.New(
+				storage,
+				loader,
+				fsManager,
+				cfg,
+			)
+		}),
+		container.Provide(func(bot *bot.Bot) send_message.Bot {
+			return bot
+		}),
+		container.Provide(func(s *storage.Storage) send_message.Storage {
+			return s
+		}),
+		container.Provide(func(bot send_message.Bot, storage send_message.Storage) *send_message.SendMessageUseCase {
+			return send_message.New(bot, storage)
+		}),
+		container.Provide(func(sendMessage *send_message.SendMessageUseCase) fs_watcher.SendMessageUseCase {
+			return sendMessage
+		}),
+	)
 }
 
 func digInvoke(ctx context.Context, container *dig.Container) error {
-	var errorList []error
-
-	if err := container.Invoke(func(cfg *config.Config, logger *zap.Logger) {
-		logger.Info("Application starting", zap.String("watchDir", cfg.WatchDir), zap.String("downloadDir", cfg.DownloadDir))
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Invoke(func(bot *bot.Bot) error {
-		return bot.Start(ctx)
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	if err := container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
-		logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
-		err := watcher.Start(ctx)
-		if err != nil {
-			logger.Fatal("Failed to start watcher", zap.Error(err))
-		}
-	}); err != nil {
-		errorList = append(errorList, err)
-	}
-
-	return errors.Join(errorList...)
+	return multierr.Combine(
+		container.Invoke(func(cfg *config.Config, logger *zap.Logger) {
+			logger.Info("Application starting", zap.String("watchDir", cfg.WatchDir), zap.String("downloadDir", cfg.DownloadDir))
+		}),
+		container.Invoke(func(bot *bot.Bot) error {
+			return bot.Start(ctx)
+		}),
+		container.Invoke(func(watcher *fs_watcher.Watcher, cfg *config.Config, logger *zap.Logger) {
+			logger.Info("Starting watcher for", zap.String("dir", cfg.WatchDir))
+			err := watcher.Start(ctx)
+			if err != nil {
+				logger.Fatal("Failed to start watcher", zap.Error(err))
+			}
+		}),
+	)
 }
 
 func main() {
