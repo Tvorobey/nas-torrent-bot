@@ -146,7 +146,7 @@ func main() {
 
 	err = digInvoke(ctx, container)
 	if err != nil {
-		log.Fatalf("failed invole dig: %v", err)
+		log.Fatalf("failed invoke dig: %v", err)
 	}
 
 	// Grace shutdown

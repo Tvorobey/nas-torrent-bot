@@ -5,12 +5,13 @@ import (
 	"nas-torrent-bot/internal/usecase/process_message/entity"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/pkg/errors"
 )
 
 func (b *Bot) Start(ctx context.Context) error {
 	botApi, err := tgbotapi.NewBotAPI(b.cfg.BotToken)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "tgbotapi.NewBotAPI")
 	}
 
 	b.tgBot = botApi

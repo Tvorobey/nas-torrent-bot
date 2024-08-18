@@ -12,6 +12,10 @@ test:
 lint:
 	golangci-lint run
 
+vendor:
+	go mod tidy
+	go mod vendor
+
 build:
 	rm torrent_bot && rm torrentbot.tar
 	CGO_ENABLED=0 GOOS=linux go build -a -o ./torrent_bot ./cmd/main.go
